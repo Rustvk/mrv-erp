@@ -1,0 +1,12 @@
+{
+  "name": "@mrv-erp/types",
+  "version": "1.0.0",
+  "private": true,
+  "license": "ISC",
+  "devDependencies": {
+    "@mrv-erp/config-typescript": "workspace:*"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

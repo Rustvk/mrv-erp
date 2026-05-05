@@ -1,0 +1,11 @@
+{
+  "name": "@mrv-erp/api",
+  "version": "1.0.0",
+  "private": true,
+  "peerDependencies": {
+    "@reduxjs/toolkit": "2.11.2"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

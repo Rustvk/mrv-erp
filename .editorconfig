@@ -1,0 +1,21 @@
+# Указывает редакторам, что это корневой файл и не нужно искать другие .editorconfig выше по дереву папок
+root = true
+
+# Базовые правила для всех файлов
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+# Для конфигурационных файлов и скриптов, где могут требоваться другие отступы
+[*.{json,yml,yaml}]
+indent_size = 2
+
+# В Markdown файлах пробелы на конце строки часто используются для принудительного переноса строки,
+# поэтому здесь мы отключаем их удаление
+[*.md]
+trim_trailing_whitespace = false

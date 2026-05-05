@@ -1,0 +1,11 @@
+{
+  "name": "@mrv-erp/config-typescript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Базовые настройки TypeScript для проектов",
+  "exports": {
+    "./base.json": "./base.json",
+    "./frontend.json": "./frontend.json",
+    "./node.json": "./node.json"
+  }
+}

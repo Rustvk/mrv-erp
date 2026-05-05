@@ -1,0 +1,9 @@
+{
+  "name": "@mrv-erp/config-tailwind",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Дизайн-система и настройки Tailwind CSS",
+  "exports": {
+    ".": "./tailwind.config.js"
+  }
+}
