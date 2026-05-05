@@ -1,0 +1,119 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  # Рубильник для ручного запуска и выбора раннера
+  workflow_dispatch:
+    inputs:
+      runner_env:
+        description: 'Где выполнять сборку?'
+        required: true
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+
+jobs:
+  # ---------------------------------------------------
+  # 1. ОБЩАЯ СБОРКА ОБРАЗОВ
+  # ---------------------------------------------------
+  build-and-push:
+    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🚀 Build with Turborepo
+        run: pnpm exec turbo run build
+
+      - name: 🔑 Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Build and Push Docker Images
+        run: |
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          TAG=${GITHUB_SHA::7}
+
+          docker build -t ghcr.io/$REPO/supply:$TAG ./apps/supply
+          docker build -t ghcr.io/$REPO/distribution:$TAG ./apps/distribution
+
+          docker push ghcr.io/$REPO/supply:$TAG
+          docker push ghcr.io/$REPO/distribution:$TAG
+
+  # ---------------------------------------------------
+  # 2. ДЕПЛОЙ НА СТЕЙДЖИНГ (Только для ветки dev)
+  # ---------------------------------------------------
+  deploy-staging:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/dev'
+    environment: staging
+    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+    steps:
+      - name: Deploy to Staging
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          TAG: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: TAG, REPO
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cd /opt/mrv-erp
+            export APP_VERSION=${TAG::7}
+            export APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+            docker compose pull
+            docker compose up -d
+            docker system prune -af
+
+  # ---------------------------------------------------
+  # 3. ДЕПЛОЙ НА ПРОДАКШН (Только для ветки main)
+  # ---------------------------------------------------
+  deploy-production:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+    steps:
+      - name: Deploy to Production
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          TAG: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: TAG, REPO
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cd /opt/mrv-erp
+            export APP_VERSION=${TAG::7}
+            export APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+            docker compose pull
+            docker compose up -d
+            docker system prune -af
