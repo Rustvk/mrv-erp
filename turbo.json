@@ -10,7 +10,7 @@
       "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts"]
     },
     "lint": {
-      "output": []
+      "outputs": []
     },
     "typecheck": {
       "outputs": []
