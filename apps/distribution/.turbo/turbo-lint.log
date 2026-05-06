@@ -1,0 +1,5 @@
+
+
+> @mrv-erp/distribution@1.0.0 lint /Users/rustammambetov/Desktop/PET/Dararu IS/apps/distribution
+> eslint "src/**/*.{ts,tsx}"
+

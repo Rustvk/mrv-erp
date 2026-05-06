@@ -1,0 +1,5 @@
+
+
+> @mrv-erp/supply@1.0.0 lint /Users/rustammambetov/Desktop/PET/Dararu IS/apps/supply
+> eslint "src/**/*.{ts,tsx}"
+

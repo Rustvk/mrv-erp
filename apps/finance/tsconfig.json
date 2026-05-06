@@ -1,0 +1,9 @@
+{
+  "extends": "@mrv-erp/config-typescript/frontend.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

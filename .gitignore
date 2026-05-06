@@ -1,2 +1,73 @@
+# =========================
+# 1. Зависимости (Dependencies)
+# =========================
 node_modules
+.pnp
+.pnp.js
+
+# =========================
+# 2. Turborepo и Кэширование (КРИТИЧЕСКИ ВАЖНО)
+# =========================
+.turbo
+.cache
+
+# =========================
+# 3. Артефакты сборки (Build Outputs)
+# =========================
 dist
+build
+out
+.next/
+.nuxt/
+.vuepress/
+.serverless/
+.expo/
+*.tsbuildinfo
+
+# =========================
+# 4. Тесты и Покрытие (Testing & Coverage)
+# =========================
+coverage/
+.nyc_output/
+
+# =========================
+# 5. Переменные окружения (Environment Variables)
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# ВНИМАНИЕ: .env.example или .env.template обычно коммитят, поэтому их тут нет
+
+# =========================
+# 6. Логи (Logs)
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# =========================
+# 7. Инфраструктура и Деплой (Vercel, Docker и т.д.)
+# =========================
+.vercel
+*.pem
+
+# =========================
+# 8. Инструменты разработчика и IDE (Editors / OS)
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

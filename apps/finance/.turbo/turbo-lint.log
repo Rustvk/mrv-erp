@@ -1,0 +1,5 @@
+
+
+> @mrv-erp/finance@1.0.0 lint /Users/rustammambetov/Desktop/PET/Dararu IS/apps/finance
+> eslint "src/**/*.{ts,tsx}"
+

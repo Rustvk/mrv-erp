@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  supply:
+    image: ghcr.io/${APP_REPO}/supply:${APP_VERSION}
+    ports:
+      - '8001:80'
+    restart: always
+
+  distribution:
+    image: ghcr.io/${APP_REPO}/distribution:${APP_VERSION}
+    ports:
+      - '8002:80'
+    restart: always
+
+  finance:
+    image: ghcr.io/${APP_REPO}/finance:${APP_VERSION}
+    ports:
+      - '8003:80'
+    restart: always

@@ -5,6 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
+    "clean": "turbo run clean",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
@@ -20,18 +21,19 @@
     "husky": "9.1.7",
     "lint-staged": "16.4.0",
     "prettier": "3.8.3",
-    "turbo": "2.9.8"
+    "turbo": "2.9.8",
+    "typescript": "~5.3.3"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=10.0.0"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],
-    "*.{json,css,md,yml,yaml}": [
+    "*.{js,jsx,json,css,md,yml,yaml}": [
       "prettier --write"
     ]
   }
