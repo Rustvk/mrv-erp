@@ -60,9 +60,9 @@ jobs:
           REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           TAG=${GITHUB_SHA::7}
 
-          docker build -t ghcr.io/$REPO/distribution:$TAG ./apps/distribution
-          docker build -t ghcr.io/$REPO/finance:$TAG ./apps/finance
-          docker build -t ghcr.io/$REPO/supply:$TAG ./apps/supply
+          docker build -t ghcr.io/$REPO/distribution:$TAG --build-arg APP_NAME=distribution .
+          docker build -t ghcr.io/$REPO/finance:$TAG --build-arg APP_NAME=finance .
+          docker build -t ghcr.io/$REPO/supply:$TAG --build-arg APP_NAME=supply .
 
           docker push ghcr.io/$REPO/distribution:$TAG
           docker push ghcr.io/$REPO/finance:$TAG
