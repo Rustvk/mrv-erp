@@ -21,7 +21,14 @@ jobs:
   # 1. ОБЩАЯ СБОРКА ОБРАЗОВ
   # ---------------------------------------------------
   build-and-push:
-    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+    runs-on:
+      ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+
+      # ⚡ ДОБАВЬ ВОТ ЭТИ ТРИ СТРОЧКИ:
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -77,8 +84,8 @@ jobs:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml"
-          target: "~/mrv-erp" # Кладём в домашнюю папку пользователя
+          source: 'docker-compose.yml'
+          target: '~/mrv-erp' # Кладём в домашнюю папку пользователя
 
       - name: 🚢 Deploy to Staging VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -115,8 +122,8 @@ jobs:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml"
-          target: "~/mrv-erp"
+          source: 'docker-compose.yml'
+          target: '~/mrv-erp'
 
       - name: 🚢 Deploy to Production VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
