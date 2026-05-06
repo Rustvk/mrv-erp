@@ -78,6 +78,8 @@ jobs:
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     steps:
       # ⚡ НОВЫЙ ШАГ: Копируем docker-compose.yml на сервер
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
       - name: 📂 Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -116,6 +118,8 @@ jobs:
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     steps:
       # ⚡ НОВЫЙ ШАГ: Копируем docker-compose.yml на сервер
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
       - name: 📂 Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
