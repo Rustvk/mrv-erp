@@ -54,7 +54,7 @@ jobs:
           # Сборка Finance
           docker build \
             --build-arg APP_DIR=finance \
-            --build-arg APP_SCOPE=@mrv-erp/fincance \
+            --build-arg APP_SCOPE=@mrv-erp/finance \
             -t ghcr.io/$REPO/finance:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/finance:$TAG
