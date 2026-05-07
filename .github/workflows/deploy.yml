@@ -46,7 +46,7 @@ jobs:
           # Сборка Distribution
           docker build \
             --build-arg APP_DIR=distribution \
-            --build-arg APP_SCOPE=@mrv/distribution \
+            --build-arg APP_SCOPE=@mrv-erp/distribution \
             -t ghcr.io/$REPO/distribution:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/distribution:$TAG
@@ -54,7 +54,7 @@ jobs:
           # Сборка Finance
           docker build \
             --build-arg APP_DIR=finance \
-            --build-arg APP_SCOPE=@mrv/fincance \
+            --build-arg APP_SCOPE=@mrv-erp/fincance \
             -t ghcr.io/$REPO/finance:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/finance:$TAG
@@ -62,7 +62,7 @@ jobs:
           # Сборка Supply
           docker build \
             --build-arg APP_DIR=supply \
-            --build-arg APP_SCOPE=@mrv/supply \
+            --build-arg APP_SCOPE=@mrv-erp/supply \
             -t ghcr.io/$REPO/supply:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/supply:$TAG
