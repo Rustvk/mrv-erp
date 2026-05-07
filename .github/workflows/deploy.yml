@@ -21,10 +21,8 @@ jobs:
   # 1. ОБЩАЯ СБОРКА ОБРАЗОВ
   # ---------------------------------------------------
   build-and-push:
-    runs-on:
-      ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
 
-      # ⚡ ДОБАВЬ ВОТ ЭТИ ТРИ СТРОЧКИ:
     permissions:
       contents: read
       packages: write
@@ -32,21 +30,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🚀 Build with Turborepo
-        run: pnpm exec turbo run build
 
       - name: 🔑 Login to GHCR
         uses: docker/login-action@v3
@@ -60,12 +43,25 @@ jobs:
           REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           TAG=${GITHUB_SHA::7}
 
-          docker build -t ghcr.io/$REPO/distribution:$TAG --build-arg APP_NAME=distribution .
-          docker build -t ghcr.io/$REPO/finance:$TAG --build-arg APP_NAME=finance .
-          docker build -t ghcr.io/$REPO/supply:$TAG --build-arg APP_NAME=supply .
-
+          # Сборка Distribution
+          docker build \
+            --build-arg APP_NAME=distribution \
+            -t ghcr.io/$REPO/distribution:$TAG \
+            -f ./Dockerfile .
           docker push ghcr.io/$REPO/distribution:$TAG
+
+          # Сборка Finance
+          docker build \
+            --build-arg APP_NAME=finance \
+            -t ghcr.io/$REPO/finance:$TAG \
+            -f ./Dockerfile .
           docker push ghcr.io/$REPO/finance:$TAG
+
+          # Сборка Supply
+          docker build \
+            --build-arg APP_NAME=supply \
+            -t ghcr.io/$REPO/supply:$TAG \
+            -f ./Dockerfile .
           docker push ghcr.io/$REPO/supply:$TAG
 
   # ---------------------------------------------------
