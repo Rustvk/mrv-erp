@@ -70,10 +70,10 @@ jobs:
   # ---------------------------------------------------
   # 2. ДЕПЛОЙ НА СТЕЙДЖИНГ (Только для ветки dev)
   # ---------------------------------------------------
-  deploy-staging:
+  deploy:
     needs: build-and-push
-    if: github.ref == 'refs/heads/dev'
-    environment: staging
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     steps:
       # ⚡ НОВЫЙ ШАГ: Копируем docker-compose.yml на сервер
@@ -93,56 +93,23 @@ jobs:
         env:
           TAG: ${{ github.sha }}
           REPO: ${{ github.repository }}
+          DOMAIN: ${{ vars.DOMAIN }}
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: TAG, REPO
+          envs: TAG, REPO, DOMAIN
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             cd ~/mrv-erp # Переходим в домашнюю папку
-            export APP_VERSION=${TAG::7}
             export APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
-            docker compose pull
-            docker compose up -d
-            docker system prune -af
 
-  # ---------------------------------------------------
-  # 3. ДЕПЛОЙ НА ПРОДАКШН (Только для ветки main)
-  # ---------------------------------------------------
-  deploy-production:
-    needs: build-and-push
-    if: github.ref == 'refs/heads/master'
-    environment: production
-    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
-    steps:
-      # ⚡ НОВЫЙ ШАГ: Копируем docker-compose.yml на сервер
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-      - name: 📂 Copy docker-compose to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: 'docker-compose.yml'
-          target: '~/mrv-erp'
+            echo "APP_VERSION=${APP_VERSION}" > .env
+            echo "APP_REPO=${APP_REPO}" >> .env
+            echo "DOMAIN=${DOMAIN}" >> .env
 
-      - name: 🚢 Deploy to Production VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          TAG: ${{ github.sha }}
-          REPO: ${{ github.repository }}
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: TAG, REPO
-          script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            cd ~/mrv-erp
-            export APP_VERSION=${TAG::7}
-            export APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+            chmod 600 .env
+
             docker compose pull
             docker compose up -d
             docker system prune -af
