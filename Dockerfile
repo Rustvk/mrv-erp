@@ -9,14 +9,14 @@ WORKDIR /app
 RUN npm install -g turbo
 
 # Принимаем имя приложения как аргумент
-ARG APP_NAME
-RUN test -n "$APP_NAME" || (echo "APP_NAME is required" && false)
+ARG APP_SCOPE
+RUN test -n "$APP_SCOPE" || (echo "APP_SCOPE is required" && false)
 
 # Копируем весь монорепозиторий в Docker-контекст
 COPY . .
 
 # Turbo создает папку /app/out с выжимкой нужных файлов для APP_NAME
-RUN turbo prune ${APP_NAME} --docker
+RUN turbo prune ${APP_SCOPE} --docker
 
 # ==========================================
 # ЭТАП 2: Builder (Установка и сборка)
@@ -28,7 +28,7 @@ WORKDIR /app
 # Устанавливаем pnpm
 RUN npm install -g pnpm turbo
 
-ARG APP_NAME
+ARG APP_SCOPE
 
 # Шаг 2.1: Копируем ТОЛЬКО package.json и lock-файлы из pruner
 COPY --from=pruner /app/out/json/ .
@@ -42,14 +42,14 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 
 # Собираем конкретное приложение
-RUN turbo run build --filter=${APP_NAME}
+RUN turbo run build --filter=${APP_SCOPE}
 
 # ==========================================
 # ЭТАП 3: Runner (Легковесный Nginx для продакшена)
 # ==========================================
 FROM nginx:alpine AS runner
 
-ARG APP_NAME
+ARG APP_DIR
 
 # Удаляем дефолтный конфиг
 RUN rm /etc/nginx/conf.d/default.conf
@@ -58,7 +58,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY shared/nginx.conf /etc/nginx/conf.d/default.conf
 
 # ⚡ САМОЕ ВАЖНОЕ: Копируем собранный dist из этапа Builder
-COPY --from=builder /app/apps/${APP_NAME}/dist/ /usr/share/nginx/html/
+COPY --from=builder /app/apps/${APP_DIR}/dist/ /usr/share/nginx/html/
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

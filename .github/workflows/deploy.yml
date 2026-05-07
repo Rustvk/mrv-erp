@@ -45,21 +45,24 @@ jobs:
 
           # Сборка Distribution
           docker build \
-            --build-arg APP_NAME=distribution \
+            --build-arg APP_DIR=distribution \
+            --build-arg APP_SCOPE=@mrv/distribution \
             -t ghcr.io/$REPO/distribution:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/distribution:$TAG
 
           # Сборка Finance
           docker build \
-            --build-arg APP_NAME=finance \
+            --build-arg APP_DIR=finance \
+            --build-arg APP_SCOPE=@mrv/fincance \
             -t ghcr.io/$REPO/finance:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/finance:$TAG
 
           # Сборка Supply
           docker build \
-            --build-arg APP_NAME=supply \
+            --build-arg APP_DIR=supply \
+            --build-arg APP_SCOPE=@mrv/supply \
             -t ghcr.io/$REPO/supply:$TAG \
             -f ./Dockerfile .
           docker push ghcr.io/$REPO/supply:$TAG
