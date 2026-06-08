@@ -1,0 +1,12 @@
+@import '@mrv-erp/config-tailwind/theme.css';
+
+/* Здесь можно писать локальные стили конкретного приложения,
+   которые не нужны в других местах */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

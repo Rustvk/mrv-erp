@@ -1,0 +1,6 @@
+@import '@mrv-erp/config-tailwind/theme.css';
+
+/* Ниже вы можете писать локальные стили админки, если они нужны */
+.admin-sidebar-override {
+  @apply bg-primary/10;
+}

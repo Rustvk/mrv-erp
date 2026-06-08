@@ -1,46 +1,70 @@
-module.exports = {
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
-  },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
-    // Prettier всегда должен быть последним, чтобы отключать конфликтующие правила форматирования
-    'prettier',
-  ],
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
-    },
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-  },
-  plugins: [
-    'react',
-    '@typescript-eslint',
-    '@conarti/feature-sliced'
-  ],
-  settings: {
-    react: {
-      version: 'detect', // Автоматически определяет версию React
-    },
-  },
-  rules: {
-    // Базовые правила React
-    'react/react-in-jsx-scope': 'off', // Отключаем, так как в React 18+ не нужно импортировать React для JSX
-    'react/prop-types': 'off', // Мы используем TypeScript, PropTypes нам не нужны
+import { createRequire } from 'node:module';
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import tailwindPlugin from 'eslint-plugin-tailwindcss';
+import fsdPlugin from '@conarti/eslint-plugin-feature-sliced';
+import prettierConfig from 'eslint-config-prettier';
+import globals from 'globals';
 
-    // Архитектурные правила FSD
-    // 1. Запрещает импортировать верхние слои в нижние (например, pages в features)
-    '@conarti/feature-sliced/layers-slices': 'error',
-    // 2. Требует использовать абсолютные импорты между модулями и относительные внутри одного модуля
-    '@conarti/feature-sliced/absolute-relative': 'error',
-    // 3. Жестко требует импортировать сущности и фичи только через их Public API (index.ts)
-    '@conarti/feature-sliced/public-api': 'error',
+const require = createRequire(import.meta.url);
+
+export default tseslint.config(
+  // 1. Базовые рекомендуемые правила JS
+  js.configs.recommended,
+
+  // 2. Рекомендуемые правила TypeScript
+  ...tseslint.configs.recommended,
+
+  // 3. Основной конфиг
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      // Настройка для Tailwind
+      tailwindcss: {
+        callees: ['classnames', 'clsx', 'ctl'],
+      },
+    },
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      tailwindcss: tailwindPlugin,
+      '@conarti/feature-sliced': fsdPlugin,
+    },
+    rules: {
+      // Рекомендуемые правила React
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooksPlugin.configs.recommended.rules,
+
+      // Переопределения React
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+
+      // Правила Tailwind
+      // eslint-tailwind no-arbitrary-value пока не умеет работать с tailwind v4
+      // 'tailwindcss/no-arbitrary-value': 'error',
+
+      // Архитектурные правила FSD
+      '@conarti/feature-sliced/layers-slices': 'error',
+      '@conarti/feature-sliced/absolute-relative': 'error',
+      '@conarti/feature-sliced/public-api': 'error',
+    },
   },
-};
+
+  prettierConfig,
+);

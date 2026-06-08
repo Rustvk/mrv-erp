@@ -2,17 +2,24 @@
   "name": "@mrv-erp/config-eslint",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "index.js",
-  "description": "Глобальные правила ESLint",
+  "description": "Глобальные правила ESLint (Flat Config)",
   "exports": {
     ".": "./index.js"
   },
   "dependencies": {
+    "@eslint/js": "9.2.0",
+    "typescript-eslint": "8.24.0",
+    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-tailwindcss": "3.18.3",
     "@conarti/eslint-plugin-feature-sliced": "1.0.5",
-    "@typescript-eslint/eslint-plugin": "7.0.0",
-    "@typescript-eslint/parser": "7.0.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-react": "7.33.0",
-    "eslint-plugin-react-hooks": "4.6.0"
+    "eslint-config-prettier": "10.0.1",
+    "globals": "15.14.0",
+    "tailwindcss": "3.4.17"
+  },
+  "peerDependencies": {
+    "eslint": "catalog:"
   }
 }

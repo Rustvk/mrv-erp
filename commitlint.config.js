@@ -9,21 +9,26 @@ module.exports = {
     'scope-enum': [
       2,
       'always',
-      [
-        'auth',
-        'supply',
-        'finance',
-        'distribution',
-        'infrastructure',
-        'deps',
-      ],
+      ['auth', 'supply', 'finance', 'distribution', 'infrastructure', 'deps', 'ui'],
     ],
 
     // 3. Правила для типа (type)
     'type-enum': [
       2,
       'always',
-      ['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style', 'test'],
+      [
+        'build',
+        'chore',
+        'ci',
+        'docs',
+        'feat',
+        'fix',
+        'perf',
+        'refactor',
+        'revert',
+        'style',
+        'test',
+      ],
     ],
   },
 };

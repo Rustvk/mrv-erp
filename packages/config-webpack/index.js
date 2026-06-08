@@ -34,9 +34,11 @@ module.exports = function buildWebpackConfig(options) {
 
     resolve: {
       // Чтобы писать import { App } from './App' вместо './App.tsx'
-      extensions: ['.tsx', '.ts', '.js'],
+      extensions: ['.tsx', '.ts', '.js', '.jsx'],
       alias: {
         '@': paths.src, // Настройка алиаса для FSD
+        react: path.dirname(require.resolve('react')),
+        'react-dom': path.dirname(require.resolve('react-dom')),
       },
       // ВАЖНО: Разрешаем Webpack идти по симлинкам pnpm в соседние пакеты монорепозитория
       symlinks: true,
@@ -45,6 +47,7 @@ module.exports = function buildWebpackConfig(options) {
     module: {
       rules: [
         {
+          // TODO Заменить на babel loader
           test: /\.tsx?$/,
           use: [
             {
@@ -59,7 +62,7 @@ module.exports = function buildWebpackConfig(options) {
           // КЛЮЧЕВОЙ МОМЕНТ МОНОРЕПОЗИТОРИЯ:
           // Исключаем все node_modules, КРОМЕ пакетов с нашим скоупом @mrv-erp.
           // Это заставит Webpack прогонять код из packages/ui через ts-loader.
-          exclude: /node_modules\/(?!(@mrv-erp)\/).*/,
+          exclude: /node_modules[\\/](?!(@mrv-erp)[\\/]).*/,
         },
         {
           test: /\.css$/i,
@@ -68,7 +71,17 @@ module.exports = function buildWebpackConfig(options) {
             // В prod-режиме извлекаются в отдельные .css файлы для кэширования браузером
             isDev ? require.resolve('style-loader') : MiniCssExtractPlugin.loader,
             require.resolve('css-loader'),
-            require.resolve('postcss-loader'), // Нужен для обработки Tailwind
+            {
+              loader: require.resolve('postcss-loader'),
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    // Подключаем движок Tailwind v4
+                    require('@tailwindcss/postcss')(),
+                  ],
+                },
+              },
+            },
           ],
         },
       ],
@@ -79,10 +92,10 @@ module.exports = function buildWebpackConfig(options) {
         template: paths.html,
       }),
       !isDev &&
-      new MiniCssExtractPlugin({
-        filename: 'css/[name].[contenthash:8].css',
-        chunkFilename: 'css/[name].[contenthash:8].css',
-      }),
+        new MiniCssExtractPlugin({
+          filename: 'css/[name].[contenthash:8].css',
+          chunkFilename: 'css/[name].[contenthash:8].css',
+        }),
       // Прокидываем глобальные переменные в React
       new webpack.DefinePlugin({
         __IS_DEV__: JSON.stringify(isDev),
@@ -91,13 +104,13 @@ module.exports = function buildWebpackConfig(options) {
 
     devServer: isDev
       ? {
-        port: port ?? 3000,
-        open: true,
-        hot: true, // Включение Hot Module Replacement
-        // ВАЖНО ДЛЯ ENTERPRISE: Любой запрос, который не совпадает со статикой (js, css),
-        // будет перенаправлен на index.html. Без этого не работает react-router-dom при перезагрузке страницы.
-        historyApiFallback: true,
-      }
+          port: port ?? 3000,
+          open: true,
+          hot: true, // Включение Hot Module Replacement
+          // ВАЖНО ДЛЯ ENTERPRISE: Любой запрос, который не совпадает со статикой (js, css),
+          // будет перенаправлен на index.html. Без этого не работает react-router-dom при перезагрузке страницы.
+          historyApiFallback: true,
+        }
       : undefined,
   };
 };

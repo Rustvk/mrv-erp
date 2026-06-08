@@ -1,0 +1,10 @@
+@import '@mrv-erp/config-tailwind/theme.css';
+@import '@mrv-erp/ui/styles.css';
+
+/* (Опционально) Специфичные глобальные стили только для админки */
+@layer base {
+  body {
+    /* Например, фиксированный фон для админки */
+    @apply bg-slate-50 dark:bg-slate-950;
+  }
+}

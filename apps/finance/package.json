@@ -2,6 +2,7 @@
   "name": "@mrv-erp/finance",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "clean": "rm -rf node_modules .turbo dist",
     "dev": "webpack serve --env mode=development",
@@ -11,24 +12,26 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "2.0.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-redux": "9.1.0",
-    "react-router-dom": "6.22.0"
+    "@reduxjs/toolkit": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-redux": "catalog:",
+    "react-router-dom": "catalog:",
+    "@mrv-erp/ui": "workspace:*",
+    "lucide-react": "catalog:"
   },
   "devDependencies": {
     "@mrv-erp/config-eslint": "workspace:*",
     "@mrv-erp/config-jest": "workspace:*",
     "@mrv-erp/config-tailwind": "workspace:*",
     "@mrv-erp/config-typescript": "workspace:*",
-    "@mrv-erp/config-webpack": "workspace:*",
     "@mrv-erp/api": "workspace:*",
     "@mrv-erp/types": "workspace:*",
-    "@types/react": "18.2.0",
-    "@types/react-dom": "18.2.0",
-    "webpack": "5.90.0",
-    "webpack-cli": "5.1.4",
-    "webpack-dev-server": "5.0.2"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:",
+    "webpack": "catalog:",
+    "webpack-cli": "catalog:",
+    "webpack-dev-server": "catalog:"
   }
 }

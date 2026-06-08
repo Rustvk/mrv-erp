@@ -2,8 +2,15 @@
   "name": "@mrv-erp/config-tailwind",
   "version": "1.0.0",
   "private": true,
-  "description": "Дизайн-система и настройки Tailwind CSS",
+  "description": "Базовые настройки Tailwind CSS для проектов",
   "exports": {
-    ".": "./tailwind.config.js"
+    "./theme.css": "./theme.css"
+  },
+  "peerDependencies": {
+    "tailwindcss": "catalog:"
+  },
+  "dependencies": {
+    "shadcn": "catalog:",
+    "tw-animate-css": "catalog:"
   }
 }
