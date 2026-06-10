@@ -12,7 +12,7 @@ module.exports = {
       ['auth', 'supply', 'finance', 'distribution', 'infrastructure', 'deps', 'ui'],
     ],
 
-    // 3. Правила для типа (type)
+    // 3. Правила для типа
     'type-enum': [
       2,
       'always',

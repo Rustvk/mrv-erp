@@ -1,11 +1,8 @@
-# ==========================================
-# ЭТАП 1: Pruner (Вырезаем только нужное)
-# ==========================================
 FROM node:20-alpine AS pruner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Чтобы работал turbo (можно использовать npx, но глобальный пакет надежнее в Docker)
+# Чтобы работал turbo можно использовать npx, но глобальный пакет надежнее в Docker
 RUN npm install -g turbo
 
 # Принимаем имя приложения как аргумент
@@ -18,9 +15,7 @@ COPY . .
 # Turbo создает папку /app/out с выжимкой нужных файлов для APP_NAME
 RUN turbo prune ${APP_SCOPE} --docker
 
-# ==========================================
-# ЭТАП 2: Builder (Установка и сборка)
-# ==========================================
+# Установка и сборка
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -30,23 +25,21 @@ RUN npm install -g pnpm turbo
 
 ARG APP_SCOPE
 
-# Шаг 2.1: Копируем ТОЛЬКО package.json и lock-файлы из pruner
+# Копируем package.json и lock-файлы из pruner
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Устанавливаем зависимости.
-# Этот слой закэшируется Docker'ом и не будет пересобираться, если вы меняете только код!
+# Этот слой закэшируется Docker'ом и не будет пересобираться, если меняется только код
 RUN pnpm install --frozen-lockfile
 
-# Шаг 2.2: Копируем исходный код приложения и пакетов
+# Копируем исходный код приложения и пакетов
 COPY --from=pruner /app/out/full/ .
 
 # Собираем конкретное приложение
 RUN turbo run build --filter=${APP_SCOPE}
 
-# ==========================================
-# ЭТАП 3: Runner (Легковесный Nginx для продакшена)
-# ==========================================
+# Создание содержимого контейнера для ghrc.io
 FROM nginx:alpine AS runner
 
 ARG APP_DIR
@@ -54,10 +47,10 @@ ARG APP_DIR
 # Удаляем дефолтный конфиг
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Копируем общий конфиг Nginx
+# Копируем общий конфиг nginx
 COPY shared/nginx.conf /etc/nginx/conf.d/default.conf
 
-# ⚡ САМОЕ ВАЖНОЕ: Копируем собранный dist из этапа Builder
+# Копируем собранный dist из этапа Builder
 COPY --from=builder /app/apps/${APP_DIR}/dist/ /usr/share/nginx/html/
 
 EXPOSE 80

@@ -5,6 +5,10 @@ on:
     branches:
       - dev
       - master
+  # Зарезервировал тригер запуска если кончатся лимиты времени выполнения бесплатного ранера в github.
+  # Тогда можно будет выбрать "self-hosted" и запустится раннер развернутый на том же сервере, на котором крутится приложение
+  # Это немного медленнее, но скорость доставки в проекте не является сверхкритичным фактором
+  # Возможно есть способ настроить проверку лимитов и автоматизировать выбор ранера, но пока - YAGNI
   workflow_dispatch:
     inputs:
       runner_env:
@@ -17,99 +21,154 @@ on:
           - self-hosted
 
 jobs:
-  # ---------------------------------------------------
-  # 1. ОБЩАЯ СБОРКА ОБРАЗОВ
-  # ---------------------------------------------------
-  build-and-push:
-    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
+  # Анализ изменений в коде
+  # Поскольку в монорепозитории находится три сервиса, то будет тупо постоянно всех их деплоить заново
+  # поэтому включаем анализ был затронут пакет или нет для каждого приложения. И на основе эти данных будет приниматься решение
+  # запускать деплой или нет (через поднятие версии хеша комита у каждого приложения в docker-compose.yml)
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      supply: ${{ steps.filter.outputs.supply }}
+      distribution: ${{ steps.filter.outputs.distribution }}
+      finance: ${{ steps.filter.outputs.finance }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            supply:
+            - 'apps/supply/**'
+            - 'packages/**'
+            distribution:
+            - 'apps/distribution/**',
+            - 'packages/**'
+            finance:
+            - 'apps/finance/**'
+            - 'packages/**'
 
+  # Сборка образов
+  build-and-push:
+    needs: changes
+    runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔑 Login to GHCR
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🐳 Build and Push Docker Images
+      - name: Set global vars
         run: |
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          TAG=${GITHUB_SHA::7}
+          echo "REPO=$(echo "${{ github.repository }}" | tr '[:upper]' '[:lower:]')" >> $GITHUB_ENV
+          echo "TAG=${GITHUB_SHA::7}" >> GITHUB_ENV
 
-          # Сборка Distribution
-          docker build \
-            --build-arg APP_DIR=distribution \
-            --build-arg APP_SCOPE=@mrv-erp/distribution \
-            -t ghcr.io/$REPO/distribution:$TAG \
-            -f ./Dockerfile .
-          docker push ghcr.io/$REPO/distribution:$TAG
-
-          # Сборка Finance
-          docker build \
-            --build-arg APP_DIR=finance \
-            --build-arg APP_SCOPE=@mrv-erp/finance \
-            -t ghcr.io/$REPO/finance:$TAG \
-            -f ./Dockerfile .
-          docker push ghcr.io/$REPO/finance:$TAG
-
-          # Сборка Supply
-          docker build \
-            --build-arg APP_DIR=supply \
-            --build-arg APP_SCOPE=@mrv-erp/supply \
-            -t ghcr.io/$REPO/supply:$TAG \
-            -f ./Dockerfile .
+      # Supply (ТОЛЬКО если он изменился ИЛИ запуск ручной)
+      - name: Build and Push Supply
+        if: needs.changes.outputs.supply == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          docker build --build-arg APP_DIR=supply --build-arg APP_SCOPE=@mrv-erp/supply -t ghcr.io/$REPO/supply:$TAG -f ./Dockerfile .
           docker push ghcr.io/$REPO/supply:$TAG
 
-  # ---------------------------------------------------
-  # 2. ДЕПЛОЙ НА СТЕЙДЖИНГ (Только для ветки dev)
-  # ---------------------------------------------------
+      # Distribution
+      - name: Build and Push Distribution
+        if: needs.changes.outputs.distribution == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          docker build --build-arg APP_DIR=distribution --build-arg APP_SCOPE=@mrv-erp/distribution -t ghcr.io/$REPO/distribution:$TAG -f ./Dockerfile .
+          docker push ghcr.io/$REPO/distribution:$TAG
+
+      # Finance
+      - name: Build and Push Finance
+        if: needs.changes.outputs.finance == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          docker build --build-arg APP_DIR=finance --build-arg APP_SCOPE=@mrv-erp/finance -t ghcr.io/$REPO/finance:$TAG -f ./Dockerfile .
+          docker push ghcr.io/$REPO/finance:$TAG
+
+  # Деплой
   deploy:
-    needs: build-and-push
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    needs: [changes, build-and-push]
+    # Деплоим при пуше в dev/master или при любом ручном запуске
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+
+    # Если это пуш в master — окружение production. Во всех остальных случаях (включая ручной запуск) — staging
     environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
+
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     steps:
-      # ⚡ НОВЫЙ ШАГ: Копируем docker-compose.yml на сервер
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: 📂 Copy docker-compose to VPS
+
+      - name: Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: 'docker-compose.yml'
-          target: '~/mrv-erp' # Кладём в домашнюю папку пользователя
+          target: '~/mrv-erp'
 
-      - name: 🚢 Deploy to Staging VPS via SSH
+      - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
           TAG: ${{ github.sha }}
           REPO: ${{ github.repository }}
           DOMAIN: ${{ vars.DOMAIN }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          # Передаем токен и имя аккаунта для авторизации докера в ghrc перед получением образов
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+          # Передача признаков изменения того или иного приложения
+          UPDATE_SUPPLY: ${{ needs.changes.outputs.supply }}
+          UPDATE_DIST: ${{ needs.changes.outputs.distribution }}
+          UPDATE_FINANCE: ${{ needs.changes.outputs.finance }}
+          IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: TAG, REPO, DOMAIN
+          envs: TAG, REPO, DOMAIN, DB_PASSWORD, GH_TOKEN, GH_ACTOR, UPDATE_SUPPLY, UPDATE_DIST, UPDATE_FINANCE, IS_MANUAL
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            cd ~/mrv-erp # Переходим в домашнюю папку
-            export APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
+            # Надо перейти в папку в которую scp-action положил docker-compose.yml
+            # Когда запустится docker compose pull он будет искать docker-compose.yml в папке,
+            # где сейчас находится скрипт
+            cd ~/mrv-erp
 
-            echo "APP_VERSION=${APP_VERSION}" > .env
-            echo "APP_REPO=${APP_REPO}" >> .env
-            echo "DOMAIN=${DOMAIN}" >> .env
+            # Генерируем локальные переменные для создания .env
+            APP_VERSION=${TAG::7}
+            APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+
+            # Функция обновления файла env без затирки старых данных
+            touch .env
+            set_env() {
+              local key=$1
+              local val=$2
+              if grep -q "^${key}=" .env; then
+                sed -i "s/^${key}=.*/${key}=${val}/" .env
+              else
+                echo "${key}=${val}" >> .env
+              fi
+            }
+
+            # Обновляем базовые переменные
+            set_env "APP_REPO" "$APP_REPO"
+            set_env "DOMAIN" "$DOMAIN"
+            set_env "DB_PASSWORD" "$DB_PASSWORD"
+
+            # Обновляем версии у тех сервисов, данные которых реально изменились или если запуск был ручной
+            # Если приложение/сервис не был затронут, то мы оставляем ему хэш последнего коммита который на него влиял
+            if [ "$UPDATE_SUPPLY" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "SUPPLY_VERSION" "$APP_VERSION"; fi
+            if [ "$UPDATE_DIST" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "DISTRIBUTION_VERSION" "$APP_VERSION"; fi
+            if [ "$UPDATE_FINANCE" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "FINANCE_VERSION" "$APP_VERSION"; fi
 
             chmod 600 .env
 
             docker compose pull
-            docker compose up -d
+            docker compose up -d --remove-orphans
             docker system prune -af

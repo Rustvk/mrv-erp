@@ -1,18 +1,18 @@
 services:
   supply:
-    image: ghcr.io/${APP_REPO}/supply:${APP_VERSION}
+    image: ghcr.io/${APP_REPO}/supply:${SUPPLY_VERSION}
     ports:
       - '127.0.0.1:8001:80'
     restart: always
 
   distribution:
-    image: ghcr.io/${APP_REPO}/distribution:${APP_VERSION}
+    image: ghcr.io/${APP_REPO}/distribution:${DISTRIBUTION_VERSION}
     ports:
       - '127.0.0.1:8002:80'
     restart: always
 
   finance:
-    image: ghcr.io/${APP_REPO}/finance:${APP_VERSION}
+    image: ghcr.io/${APP_REPO}/finance:${FINANCE_VERSION}
     ports:
       - '127.0.0.1:8003:80'
     restart: always

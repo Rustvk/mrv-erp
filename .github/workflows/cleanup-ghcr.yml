@@ -1,8 +1,9 @@
+# Память она такая, время от времени кончается
 name: Cleanup Old GHCR Images
 
 on:
   schedule:
-    # Запускать автоматически каждое воскресенье в 3:00 ночи
+    # Запускать автоматически каждое воскресенье в 3:00 ночи пока я сплю
     - cron: '0 3 * * 0'
 
   # Оставляем возможность запустить очистку вручную по кнопке
@@ -12,28 +13,26 @@ jobs:
   clean-ghcr:
     runs-on: ubuntu-latest
 
-    # ⚡ КРИТИЧНО: Разрешаем экшену удалять пакеты
+    # Важно: Нужно дать разрешение экшену удалять пакеты
     permissions:
       packages: write
       contents: read
 
     strategy:
-      # Матрица позволяет запустить один и тот же шаг для всех ваших приложений по очереди
+      # Вот этот шаг нужно запустить для каждого пакета
       matrix:
-        # Укажите здесь названия ваших пакетов.
-        # Если образ пушится как ghcr.io/rustvk/mrv-erp/supply, то название пакета — mrv-erp/supply
         package:
           - 'mrv-erp/distribution'
           - 'mrv-erp/finance'
           - 'mrv-erp/supply'
 
     steps:
-      - name: 🧹 Clean up ${{ matrix.package }}
+      - name: Cleanup ${{ matrix.package }}
         uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ matrix.package }}
           package-type: 'container'
-          # Сколько последних версий оставлять (5 — отличный запас для отката)
+          # Резервирую 5 версий на случай если придется откатить билд
           min-versions-to-keep: 5
-          # (Опционально) Если раскомментировать, будет удалять только "осиротевшие" сборки без тегов
+          # Если раскомментировать, то можно будет удалять только "осиротевшие" сборки без тегов
           # delete-only-untagged-versions: 'true'
