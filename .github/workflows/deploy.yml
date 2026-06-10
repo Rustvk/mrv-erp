@@ -41,7 +41,7 @@ jobs:
             - 'apps/supply/**'
             - 'packages/**'
             distribution:
-            - 'apps/distribution/**',
+            - 'apps/distribution/**'
             - 'packages/**'
             finance:
             - 'apps/finance/**'
