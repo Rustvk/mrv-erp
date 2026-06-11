@@ -1,6 +1,6 @@
 {
   "name": "@mrv-erp/config-jest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "main": "jest.config.js",
   "exports": {
@@ -12,8 +12,8 @@
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/jest": "catalog:",
-    "jest": "catalog:",
     "identity-obj-proxy": "catalog:",
+    "jest": "catalog:",
     "jest-environment-jsdom": "catalog:",
     "ts-jest": "catalog:"
   }

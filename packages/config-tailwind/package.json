@@ -1,6 +1,6 @@
 {
   "name": "@mrv-erp/config-tailwind",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Базовые настройки Tailwind CSS для проектов",
   "exports": {

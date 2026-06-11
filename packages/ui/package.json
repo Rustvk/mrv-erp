@@ -1,6 +1,6 @@
 {
   "name": "@mrv-erp/ui",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@base-ui/react": "1.4.1",
-    "@mrv-erp/config-tailwind": "workspace:*",
     "@mrv-erp/config-eslint": "workspace:*",
+    "@mrv-erp/config-tailwind": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "1.1.1",
