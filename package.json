@@ -10,7 +10,9 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "prepare": "husky"
+    "typecheck": "turbo run typecheck",
+    "prepare": "husky",
+    "release": "lerna version --yes"
   },
   "keywords": [],
   "author": "Rustam Mambetov",
@@ -19,6 +21,8 @@
   "devDependencies": {
     "@commitlint/cli": "21.0.1",
     "@commitlint/config-conventional": "21.0.1",
+    "@lerna-lite/cli": "^5.3.0",
+    "@lerna-lite/version": "^5.3.0",
     "@mrv-erp/config-eslint": "workspace:*",
     "eslint": "catalog:",
     "husky": "catalog:",

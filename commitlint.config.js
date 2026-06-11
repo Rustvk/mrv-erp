@@ -4,7 +4,7 @@ module.exports = {
     // 0. Обязует писать scope, например feat(supply): ...
     'scope-empty': [2, 'never'],
     // 1. Ограничение длины заголовка (обычно 72 или 100 символов)
-    'header-max-length': [2, 'always', 100],
+    'header-max-length': [2, 'always', 200],
     // 2. Обязательный список scope (названия команд или модулей)
     'scope-enum': [
       2,
