@@ -2,7 +2,10 @@
   "extends": "@mrv-erp/config-typescript/frontend.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "#components/*": ["../../packages/ui/src/components/*"],
+      "#lib/*": ["../../packages/ui/src/lib/*"],
+      "#hooks/*": ["../../packages/ui/src/hooks/*"]
     }
   },
   "include": ["src"]

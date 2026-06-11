@@ -1,1 +1,45 @@
+#!/bin/sh
+
+# 1. Пропускаем проверки, если идет слияние (merge) или ребейз (rebase)
+if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ] || [ -d "$(git rev-parse --git-dir)/rebase-merge" ] || [ -d "$(git rev-parse --git-dir)/rebase-apply" ]; then
+  exit 0
+fi
+
+# TODO Конвенции именования веток (пока игнорирую, потому что могу)
+# 2. Получаем имя текущей ветки
+#BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+#
+## 3. Игнорируем служебные и главные ветки (пуши в них обычно закрыты на уровне Git-сервера, но локально пусть будут)
+#if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "master" ] || [ "$BRANCH_NAME" = "develop" ]; then
+#  pnpm exec lint-staged
+#  exit $?
+#fi
+#
+## 4. Собираем регулярное выражение на основе вашего commitlint config
+## Разрешенные типы (как в type-enum)
+#TYPES="(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)"
+#
+## Разрешенные модули (как в scope-enum)
+#SCOPES="(auth|supply|finance|distribution|infrastructure|deps|ui)"
+#
+## Префикс таск-трекера (замените MRV на ваш, если он другой)
+#TASK_ID="MRV-[0-9]+"
+#
+## Описание задачи (только строчные английские буквы, цифры и дефисы)
+#DESCRIPTION="[a-z0-9-]+"
+#
+## Итоговый паттерн: тип/модуль/MRV-номер-описание
+#VALID_BRANCH_REGEX="^${TYPES}\/${SCOPES}\/${TASK_ID}-${DESCRIPTION}$"
+#
+## 5. Проверка ветки
+#if [[ ! $BRANCH_NAME =~ $VALID_BRANCH_REGEX ]]; then
+#  echo "Ошибка: Недопустимое имя ветки '$BRANCH_NAME'"
+#  echo "Имя должно соответствовать формату: type/scope/MRV-123-description"
+#  echo "Пример правильной ветки: feat/supply/MRV-404-add-table"
+#  echo "Доступные типы: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test"
+#  echo "Доступные модули: auth, supply, finance, distribution, infrastructure, deps, ui"
+#  exit 1
+#fi
+
+# 6. Если ветка правильная, запускаем линтеры для файлов
 pnpm exec lint-staged

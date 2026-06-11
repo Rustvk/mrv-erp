@@ -37,7 +37,9 @@ jobs:
             echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
 
             # Подменяем строчку APP_VERSION в файле .env
-            sed -i "s/^APP_VERSION=.*/APP_VERSION=$TARGET_VERSION/" .env
+            sed -i "s/^SUPPLY_VERSION=.*/SUPPLY_VERSION=$TARGET_VERSION/" .env
+            sed -i "s/^DISTRIBUTION_VERSION=.*/DISTRIBUTION_VERSION=$TARGET_VERSION/" .env
+            sed -i "s/^FINANCE_VERSION=.*/FINANCE_VERSION=$TARGET_VERSION/" .env
 
             # Перезапускаем контейнеры. Docker скачает старый образ и мгновенно его поднимет
             docker compose pull
