@@ -4,8 +4,14 @@ on:
   push:
     branches:
       - dev
+  # Продакшен деплоим ТОЛЬКО когда успешно отработал воркфлоу релиза (Lerna)
+  workflow_run:
+    workflows: ['Release']
+    types:
+      - completed
+    branches:
       - master
-  # Зарезервировал тригер запуска если кончатся лимиты времени выполнения бесплатного ранера в github.
+  # Зарезервировал триггер запуска если кончатся лимиты времени выполнения бесплатного ранера в github.
   # Тогда можно будет выбрать "self-hosted" и запустится раннер развернутый на том же сервере, на котором крутится приложение
   # Это немного медленнее, но скорость доставки в проекте не является сверхкритичным фактором
   # Возможно есть способ настроить проверку лимитов и автоматизировать выбор ранера, но пока - YAGNI
@@ -26,6 +32,8 @@ jobs:
   # поэтому включаем анализ был затронут пакет или нет для каждого приложения. И на основе эти данных будет приниматься решение
   # запускать деплой или нет (через поднятие версии хеша комита у каждого приложения в docker-compose.yml)
   changes:
+    # Запускаем только если воркфлоу релиза завершился успешно или это ручной запуск / пуш в dev
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
     outputs:
       supply: ${{ steps.filter.outputs.supply }}
@@ -50,6 +58,7 @@ jobs:
   # Сборка образов
   build-and-push:
     needs: changes
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -64,10 +73,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set global vars
         run: |
-          echo "REPO=$(echo "${{ github.repository }}" | tr '[:upper]' '[:lower:]')" >> $GITHUB_ENV
-          echo "TAG=${GITHUB_SHA::7}" >> GITHUB_ENV
+          echo "REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "TAG=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
 
       # Supply (ТОЛЬКО если он изменился ИЛИ запуск ручной)
       - name: Build and Push Supply
@@ -93,11 +103,10 @@ jobs:
   # Деплой
   deploy:
     needs: [changes, build-and-push]
-    # Деплоим при пуше в dev/master или при любом ручном запуске
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
 
-    # Если это пуш в master — окружение production. Во всех остальных случаях (включая ручной запуск) — staging
-    environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
+    # Если ветка триггера (из workflow_run) master или текущий ref master — окружение production. Иначе — staging
+    environment: ${{ (github.event.workflow_run.head_branch == 'master' || github.ref == 'refs/heads/master') && 'production' || 'staging' }}
 
     runs-on: ${{ github.event.inputs.runner_env || 'ubuntu-latest' }}
     steps:
@@ -140,8 +149,8 @@ jobs:
             # где сейчас находится скрипт
             cd ~/mrv-erp
 
-            # Генерируем локальные переменные для создания .env
-            APP_VERSION=${TAG::7}
+            # Генерируем локальные переменные для создания .env (Исправлен синтаксис Bash)
+            APP_VERSION=${TAG:0:7}
             APP_REPO=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
 
             # Функция обновления файла env без затирки старых данных
