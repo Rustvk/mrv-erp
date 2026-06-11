@@ -1,4 +1,6 @@
-FROM node:20-alpine AS pruner
+ARG NODE_VERSION=22-alpine
+
+FROM node:${NODE_VERSION} AS pruner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -16,7 +18,7 @@ COPY . .
 RUN turbo prune ${APP_SCOPE} --docker
 
 # Установка и сборка
-FROM node:20-alpine AS builder
+FROM node:${NODE_VERSION} AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -40,7 +42,7 @@ COPY --from=pruner /app/out/full/ .
 RUN turbo run build --filter=${APP_SCOPE}
 
 # Создание содержимого контейнера для ghrc.io
-FROM nginx:alpine AS runner
+FROM node:${NODE_VERSION} AS runner
 
 ARG APP_DIR
 
