@@ -21,7 +21,7 @@ jobs:
         with:
           # fetch-depth 0 обязателен, чтобы lerna могла прочитать всю историю коммитов и тегов
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -46,5 +46,5 @@ jobs:
       - name: Run Lerna Release
         run: pnpm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           HUSKY: 0
