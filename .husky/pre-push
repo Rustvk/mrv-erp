@@ -6,7 +6,7 @@ echo "Запуск проверок перед пушем"
 set -e
 
 # Проверяем типы и гоняем тесты для измененных пакетов И тех, кто от них зависит
-pnpm run typecheck --filter="...[origin/main]"
-pnpm run test --filter="...[origin/main]"
+pnpm run typecheck --filter="...[origin/master]"
+pnpm run test --filter="...[origin/master]"
 
 echo "✅ Проверки пройдены, код отправляется! ✅"
