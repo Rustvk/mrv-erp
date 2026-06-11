@@ -42,7 +42,7 @@ COPY --from=pruner /app/out/full/ .
 RUN turbo run build --filter=${APP_SCOPE}
 
 # Создание содержимого контейнера для ghrc.io
-FROM nginx:apline AS runner
+FROM node:alpine AS runner
 
 ARG APP_DIR
 
