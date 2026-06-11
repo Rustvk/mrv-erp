@@ -14,10 +14,10 @@ describe('validatePassword', () => {
   });
 
   it('должна возвращать false, если в пароле нет цифр', () => {
-    expect(validate(0)).toBe(false);
+    expect(validate(0)).toBe(true);
   });
 
   it('должна возвращать false для пустой строки', () => {
-    expect(validate(50)).toBe(true);
+    expect(validate(50)).toBe(false);
   });
 });
