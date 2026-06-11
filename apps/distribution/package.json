@@ -25,6 +25,7 @@
     "@mrv-erp/config-jest": "workspace:*",
     "@mrv-erp/config-tailwind": "workspace:*",
     "@mrv-erp/config-typescript": "workspace:*",
+    "@mrv-erp/config-webpack": "workspace:*",
     "@mrv-erp/api": "workspace:*",
     "@mrv-erp/types": "workspace:*",
     "@types/react": "catalog:",

@@ -199,6 +199,9 @@ importers:
       '@mrv-erp/config-typescript':
         specifier: workspace:*
         version: link:../../packages/config-typescript
+      '@mrv-erp/config-webpack':
+        specifier: workspace:*
+        version: link:../../packages/config-webpack
       '@mrv-erp/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -266,6 +269,9 @@ importers:
       '@mrv-erp/config-typescript':
         specifier: workspace:*
         version: link:../../packages/config-typescript
+      '@mrv-erp/config-webpack':
+        specifier: workspace:*
+        version: link:../../packages/config-webpack
       '@mrv-erp/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -333,6 +339,9 @@ importers:
       '@mrv-erp/config-typescript':
         specifier: workspace:*
         version: link:../../packages/config-typescript
+      '@mrv-erp/config-webpack':
+        specifier: workspace:*
+        version: link:../../packages/config-webpack
       '@mrv-erp/types':
         specifier: workspace:*
         version: link:../../packages/types
