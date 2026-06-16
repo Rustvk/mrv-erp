@@ -8,5 +8,5 @@
       "#hooks/*": ["src/hooks/*"]
     }
   },
-  "include": ["src", "storybook"]
+  "include": ["src"]
 }

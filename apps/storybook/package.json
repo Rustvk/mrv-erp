@@ -1,0 +1,35 @@
+{
+  "name": "storybook",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "keywords": [],
+  "author": "Rustam Mambetov",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.2",
+  "dependencies": {
+    "@mrv-erp/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@mrv-erp/config-eslint": "workspace:*",
+    "@mrv-erp/config-typescript": "workspace:*",
+    "@mrv-erp/config-webpack": "workspace:*",
+    "@storybook/addon-a11y": "^10.4.5",
+    "@storybook/addon-docs": "^10.4.5",
+    "@storybook/addon-onboarding": "^10.4.5",
+    "@storybook/addon-webpack5-compiler-swc": "^4.0.3",
+    "@storybook/react-webpack5": "^10.4.5",
+    "@swc/core": "^1.15.41",
+    "@types/node": "^25.9.3",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint-plugin-storybook": "^10.4.5",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "storybook": "^10.4.5",
+    "swc-loader": "^0.2.7"
+  }
+}
