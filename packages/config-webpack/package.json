@@ -17,5 +17,13 @@
     "webpack": "catalog:",
     "webpack-cli": "catalog:",
     "webpack-dev-server": "catalog:"
+  },
+  "devDependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
+    "@swc/core": "1.15.41",
+    "css-minimizer-webpack-plugin": "^8.0.0",
+    "react-refresh": "^0.18.0",
+    "swc-loader": "0.2.7",
+    "terser-webpack-plugin": "^5.6.1"
   }
 }
