@@ -1,29 +1,36 @@
 const path = require('path');
 
+// Описываем настройки SWC инлайн (без чтения внешних файлов)
+const swcConfig = {
+  jsc: {
+    parser: {
+      syntax: 'typescript',
+      tsx: true,
+    },
+    transform: {
+      react: {
+        runtime: 'automatic', // Поддержка React 17+ (чтобы не писать import React)
+      },
+    },
+  },
+};
+
 module.exports = {
-  // Используем ts-jest для компиляции TypeScript в тестах
-  preset: 'ts-jest',
-  // Тестируем React-компоненты, поэтому нужна эмуляция браузерного DOM
   testEnvironment: 'jest-environment-jsdom',
-
-  // Подключаем наш setup-файл (используем require.resolve для точного пути в монорепозитории)
-  setupFilesAfterEnv: [require.resolve('./setupTests.ts')],
-
-  // Очищаем моки перед каждым тестом (очень важно для чистоты тестов)
+  setupFilesAfterEnv: [path.resolve(__dirname, 'setupTests.ts')],
   clearMocks: true,
-
   moduleNameMapper: {
-    // 1. Учим Jest понимать наши FSD-алиасы (@/...)
+    // Алиасы FSD
     '^@/(.*)$': '<rootDir>/src/$1',
-
-    // 2. Заглушка для стилей и картинок. Jest не умеет их читать и будет падать.
+    // Заглушка для стилей
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    // Мок для медиа-файлов
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-      require.resolve('./__mocks__/fileMock.js'),
+      path.resolve(__dirname, '__mocks__/fileMock.js'),
   },
 
   transform: {
-    // Ускоряем компиляцию тестов, отключая глубокую проверку типов в ts-jest
-    '^.+\\.tsx?$': ['ts-jest', { isolatedModules: true }],
+    // Передаем наш инлайн-объект swcConfig адаптеру
+    '^.+\\.(t|j)sx?$': [require.resolve('@swc/jest'), swcConfig],
   },
 };

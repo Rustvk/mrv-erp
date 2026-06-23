@@ -24,6 +24,7 @@
     "@lerna-lite/cli": "^5.3.0",
     "@lerna-lite/version": "^5.3.0",
     "@mrv-erp/config-eslint": "workspace:*",
+    "@types/jest": "catalog:",
     "eslint": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
