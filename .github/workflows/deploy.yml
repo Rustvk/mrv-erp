@@ -39,6 +39,7 @@ jobs:
       supply: ${{ steps.filter.outputs.supply }}
       distribution: ${{ steps.filter.outputs.distribution }}
       finance: ${{ steps.filter.outputs.finance }}
+      storybook: ${{ steps.filter.outputs.storybook }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -53,6 +54,9 @@ jobs:
             - 'packages/**'
             finance:
             - 'apps/finance/**'
+            - 'packages/**'
+            storybook:
+            - 'apps/storybook/**'
             - 'packages/**'
 
   # Сборка образов
@@ -100,6 +104,13 @@ jobs:
           docker build --build-arg APP_DIR=finance --build-arg APP_SCOPE=@mrv-erp/finance -t ghcr.io/$REPO/finance:$TAG -f ./Dockerfile .
           docker push ghcr.io/$REPO/finance:$TAG
 
+      # Storybook
+      - name: Build and Push Storybook
+        if: needs.changes.outputs.storybook == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          docker build --build-arg APP_DIR=storybook --build-arg APP_SCOPE=@mrv-erp/storybook -t ghcr.io/$REPO/storybook:$TAG -f ./Dockerfile .
+          docker push ghcr.io/$REPO/storybook:$TAG
+
   # Деплой
   deploy:
     needs: [changes, build-and-push]
@@ -136,12 +147,13 @@ jobs:
           UPDATE_SUPPLY: ${{ needs.changes.outputs.supply }}
           UPDATE_DIST: ${{ needs.changes.outputs.distribution }}
           UPDATE_FINANCE: ${{ needs.changes.outputs.finance }}
+          UPDATE_STORYBOOK: ${{ needs.changes.outputs.storybook }}
           IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: TAG, REPO, DOMAIN, DB_PASSWORD, GH_TOKEN, GH_ACTOR, UPDATE_SUPPLY, UPDATE_DIST, UPDATE_FINANCE, IS_MANUAL
+          envs: TAG, REPO, DOMAIN, DB_PASSWORD, GH_TOKEN, GH_ACTOR, UPDATE_SUPPLY, UPDATE_DIST, UPDATE_FINANCE, UPDATE_STORYBOOK, IS_MANUAL
           script: |
             echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
             # Надо перейти в папку в которую scp-action положил docker-compose.yml
@@ -175,6 +187,7 @@ jobs:
             if [ "$UPDATE_SUPPLY" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "SUPPLY_VERSION" "$APP_VERSION"; fi
             if [ "$UPDATE_DIST" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "DISTRIBUTION_VERSION" "$APP_VERSION"; fi
             if [ "$UPDATE_FINANCE" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "FINANCE_VERSION" "$APP_VERSION"; fi
+            if [ "$UPDATE_STORYBOOK" == "true" ] || [ "$IS_MANUAL" == "true" ]; then set_env "STORYBOOK_VERSION" "$APP_VERSION"; fi
 
             chmod 600 .env
 
