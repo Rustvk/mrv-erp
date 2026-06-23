@@ -13,6 +13,12 @@ module.exports = (env) => {
       output: path.resolve(__dirname, 'dist'),
       html: path.resolve(__dirname, 'public', 'index.html'),
       src: path.resolve(__dirname, 'src'),
+      aliases: {
+        // Указываем пути до пакета ui, чтобы Webpack приложения мог их собрать
+        '#components': path.resolve(__dirname, '../../packages/ui/src/components'),
+        '#lib': path.resolve(__dirname, '../../packages/ui/src/lib'),
+        '#hooks': path.resolve(__dirname, '../../packages/ui/src/hooks'),
+      }
     },
   });
 };

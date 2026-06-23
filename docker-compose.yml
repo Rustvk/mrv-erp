@@ -20,5 +20,5 @@ services:
   storybook:
     image: ghcr.io/${APP_REPO}/storybook:${STORYBOOK_VERSION}
     ports:
-      - '127.0.0.1:8003:6006'
+      - '127.0.0.1:8004:6006'
     restart: always

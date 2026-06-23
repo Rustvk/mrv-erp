@@ -2,6 +2,12 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+
+// перечисление вендорных библиотек, код которых будет вынесен в отдельные чанки
+const separatedVendorsPackages = ['ag-grid-community', 'echarts', 'lodash'];
 
 /**
  * @param {Object} options
@@ -19,56 +25,102 @@ module.exports = function buildWebpackConfig(options) {
 
   return {
     mode,
-    // Делаем сборку информативной
     stats: 'errors-warnings',
-    // В dev-режиме используем быстрые source-maps, в проде - полноценные
-    devtool: isDev ? 'eval-cheap-module-source-map' : 'source-map',
+    devtool: isDev ? 'eval-cheap-module-source-map' : 'hidden-source-map',
 
     entry: paths.entry,
     output: {
       path: paths.output,
       filename: '[name].[contenthash].js',
-      clean: true, // Очищать dist перед каждой сборкой
-      publicPath: '/', // Критически важно для React Router, чтобы работали вложенные пути
+      clean: true,
+      publicPath: '/',
+    },
+
+    optimization: {
+      runtimeChunk: 'single',
+      splitChunks: {
+        chunks: 'all',
+        minSize: 20000,
+        cacheGroups: {
+          reactVendor: {
+            test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+            name: 'react-vendor',
+            chunks: 'all',
+            priority: 20,
+          },
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module) {
+              const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
+              const packageName = match ? match[1] : 'vendors';
+
+              if (separatedVendorsPackages.includes(packageName)) {
+                return `vendor-${packageName.replace('@', '')}`;
+              }
+              return 'vendors';
+            },
+            chunks: 'all',
+            priority: 10,
+          },
+
+          mrvPackages: {
+            test: /[\\/]node_modules[\\/]@mrv-erp[\\/]/, // Зависит от того, как pnpm резолвит симлинки
+            name: 'mrv-packages',
+            chunks: 'all',
+            priority: 5,
+            minSize: 0,
+          },
+        },
+      },
+      minimize: !isDev,
+      minimizer: [
+        new TerserPlugin({
+          minify: TerserPlugin.swcMinify,
+        }),
+        new CssMinimizerPlugin(),
+      ],
     },
 
     resolve: {
-      // Чтобы писать import { App } from './App' вместо './App.tsx'
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
       alias: {
-        '@': paths.src, // Настройка алиаса для FSD
+        '@': paths.src,
         react: path.dirname(require.resolve('react')),
         'react-dom': path.dirname(require.resolve('react-dom')),
+        ...options.paths.aliases,
       },
-      // ВАЖНО: Разрешаем Webpack идти по симлинкам pnpm в соседние пакеты монорепозитория
       symlinks: true,
     },
 
     module: {
       rules: [
         {
-          // TODO Заменить на babel loader
           test: /\.tsx?$/,
+          exclude: /node_modules[\\/](?!(@mrv-erp)[\\/]).*/,
           use: [
             {
-              loader: require.resolve('ts-loader'),
+              loader: require.resolve('swc-loader'),
               options: {
-                // ВАЖНО: Мы отключаем проверку типов в Webpack для скорости.
-                // Типы будет проверять IDE или отдельный процесс ts-node (в CI/CD)
-                transpileOnly: true,
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    tsx: true,
+                  },
+                  transform: {
+                    react: {
+                      runtime: 'automatic',
+                      development: isDev,
+                      refresh: isDev,
+                    },
+                  },
+                },
               },
             },
           ],
-          // КЛЮЧЕВОЙ МОМЕНТ МОНОРЕПОЗИТОРИЯ:
-          // Исключаем все node_modules, КРОМЕ пакетов с нашим скоупом @mrv-erp.
-          // Это заставит Webpack прогонять код из packages/ui через ts-loader.
-          exclude: /node_modules[\\/](?!(@mrv-erp)[\\/]).*/,
         },
         {
           test: /\.css$/i,
           use: [
-            // В dev-режиме стили вставляются прямо в <head> для быстрого Hot Reload,
-            // В prod-режиме извлекаются в отдельные .css файлы для кэширования браузером
             isDev ? require.resolve('style-loader') : MiniCssExtractPlugin.loader,
             require.resolve('css-loader'),
             {
@@ -84,6 +136,18 @@ module.exports = function buildWebpackConfig(options) {
             },
           ],
         },
+        {
+          test: /\.(png|jpe?g|gif|woff2?|eot|ttf|otf)$/i,
+          type: 'asset/resource',
+          generator: {
+            filename: 'assets/[hash][ext][query]',
+          },
+        },
+        {
+          test: /\.svg$/i,
+          issuer: /\.[jt]sx?$/,
+          use: ['@svgr/webpack'],
+        },
       ],
     },
 
@@ -96,19 +160,17 @@ module.exports = function buildWebpackConfig(options) {
           filename: 'css/[name].[contenthash:8].css',
           chunkFilename: 'css/[name].[contenthash:8].css',
         }),
-      // Прокидываем глобальные переменные в React
       new webpack.DefinePlugin({
         __IS_DEV__: JSON.stringify(isDev),
       }),
-    ].filter(Boolean), // Удаляет false/undefined из массива плагинов
+      isDev && new ReactRefreshWebpackPlugin(),
+    ].filter(Boolean),
 
     devServer: isDev
       ? {
           port: port ?? 3000,
           open: true,
-          hot: true, // Включение Hot Module Replacement
-          // ВАЖНО ДЛЯ ENTERPRISE: Любой запрос, который не совпадает со статикой (js, css),
-          // будет перенаправлен на index.html. Без этого не работает react-router-dom при перезагрузке страницы.
+          hot: true,
           historyApiFallback: true,
         }
       : undefined,
