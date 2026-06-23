@@ -9,7 +9,7 @@ const swcConfig = {
     },
     transform: {
       react: {
-        runtime: 'automatic', // Поддержка React 17+ (чтобы не писать import React)
+        runtime: 'automatic',
       },
     },
   },
