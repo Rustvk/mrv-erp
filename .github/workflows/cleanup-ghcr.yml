@@ -25,6 +25,7 @@ jobs:
           - 'mrv-erp/distribution'
           - 'mrv-erp/finance'
           - 'mrv-erp/supply'
+          - 'mrv-erp/storybook'
 
     steps:
       - name: Cleanup ${{ matrix.package }}

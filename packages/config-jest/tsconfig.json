@@ -2,7 +2,7 @@
   "extends": "@mrv-erp/config-typescript/node.json",
   "compilerOptions": {
     "lib": ["ESNext", "DOM"],
-    "types": ["jest", "@testing-library/jest-dom"]
+    "types": ["node", "jest", "@testing-library/jest-dom"]
   },
   "include": ["**/*.ts"]
 }
