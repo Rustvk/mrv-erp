@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "build": "storybook build"
+    "build": "storybook build -o dist"
   },
   "keywords": [],
   "author": "Rustam Mambetov",
