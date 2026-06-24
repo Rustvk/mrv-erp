@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@mrv-erp/config-eslint": "workspace:*",
+    "@mrv-erp/config-tailwind": "workspace:*",
     "@mrv-erp/config-typescript": "workspace:*",
     "@mrv-erp/config-webpack": "workspace:*",
     "@storybook/addon-a11y": "^10.4.5",
@@ -23,13 +24,18 @@
     "@storybook/addon-webpack5-compiler-swc": "^4.0.3",
     "@storybook/react-webpack5": "^10.4.5",
     "@swc/core": "^1.15.41",
+    "@tailwindcss/postcss": "catalog:",
     "@types/node": "^25.9.3",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "css-loader": "catalog:",
     "eslint-plugin-storybook": "^10.4.5",
+    "lucide-react": "catalog:",
+    "postcss-loader": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "storybook": "^10.4.5",
+    "style-loader": "catalog:",
     "swc-loader": "^0.2.7"
   }
 }
