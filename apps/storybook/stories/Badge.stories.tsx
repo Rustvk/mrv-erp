@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
-import { Check, Info } from 'lucide-react'; // Замените на вашу библиотеку иконок
+import { Check, Info } from 'lucide-react';
 
 import { Badge } from '@mrv-erp/ui';
 

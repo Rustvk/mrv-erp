@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
-import { Button } from '@mrv-erp/ui'; // Убедитесь, что путь до компонента верный
+import { Button } from '@mrv-erp/ui';
 
 const meta = {
   title: 'UI/Forms/Button',

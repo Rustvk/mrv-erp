@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 
-// Укажите корректный путь к вашим компонентам
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@mrv-erp/ui';
 
 const meta: Meta<typeof Accordion> = {
